@@ -16,25 +16,15 @@ contract ConditionExampleTest is Test {
     function testValueLessThan10() public {
         conditionExample.setValue(5);
         string memory result = conditionExample.checkValue();
-        assertEq(
-            result,
-            "Value is less than 10",
-            "Error: Value should be less than 10"
-        );
-        emit log(
-            "testValueLessThan10 passed: Value is less than 10 as expected."
-        );
+        assertEq(result, "Value is less than 10", "Error: Value should be less than 10");
+        emit log("testValueLessThan10 passed: Value is less than 10 as expected.");
     }
 
     // valueが10の場合のテスト
     function testValueEqualTo10() public {
         conditionExample.setValue(10);
         string memory result = conditionExample.checkValue();
-        assertEq(
-            result,
-            "Value is exactly 10",
-            "Error: Value should be exactly 10"
-        );
+        assertEq(result, "Value is exactly 10", "Error: Value should be exactly 10");
         emit log("testValueEqualTo10 passed: Value is exactly 10 as expected.");
     }
 
@@ -42,13 +32,7 @@ contract ConditionExampleTest is Test {
     function testValueGreaterThan10() public {
         conditionExample.setValue(15);
         string memory result = conditionExample.checkValue();
-        assertEq(
-            result,
-            "Value is greater than 10",
-            "Error: Value should be greater than 10"
-        );
-        emit log(
-            "testValueGreaterThan10 passed: Value is greater than 10 as expected."
-        );
+        assertEq(result, "Value is greater than 10", "Error: Value should be greater than 10");
+        emit log("testValueGreaterThan10 passed: Value is greater than 10 as expected.");
     }
 }

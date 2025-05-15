@@ -17,9 +17,7 @@ contract UserStorage {
     }
 
     // ユーザー情報を取得する関数
-    function getUser(
-        address _userAddress
-    ) public view returns (string memory name, address userAddress) {
+    function getUser(address _userAddress) public view returns (string memory name, address userAddress) {
         User memory user = users[_userAddress];
         return (user.name, user.userAddress);
     }

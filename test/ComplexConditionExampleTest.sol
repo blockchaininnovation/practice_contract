@@ -21,9 +21,7 @@ contract ComplexConditionExampleTest is Test {
             "Value is less than 10 and the contract is active",
             "Error: Expected result for value < 10 and active."
         );
-        emit log(
-            "testValueLessThan10AndActive passed: Value is less than 10 and contract is active as expected."
-        );
+        emit log("testValueLessThan10AndActive passed: Value is less than 10 and contract is active as expected.");
     }
 
     // valueが10以上20以下でかつisActiveがtrueの場合のテスト
@@ -58,14 +56,8 @@ contract ComplexConditionExampleTest is Test {
     function testValueGreaterThanOrEqualTo50() public {
         complexConditionExample.setValues(55, true);
         string memory result = complexConditionExample.checkComplexCondition();
-        assertEq(
-            result,
-            "Value is 50 or greater",
-            "Error: Expected result for value >= 50."
-        );
-        emit log(
-            "testValueGreaterThanOrEqualTo50 passed: Value is 50 or greater as expected."
-        );
+        assertEq(result, "Value is 50 or greater", "Error: Expected result for value >= 50.");
+        emit log("testValueGreaterThanOrEqualTo50 passed: Value is 50 or greater as expected.");
     }
 
     // 条件に該当しない場合のテスト

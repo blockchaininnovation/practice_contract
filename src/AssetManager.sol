@@ -1,118 +1,135 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
+import "forge-std/console.sol";
+
+/**
+ * @title AssetManager
+ * @dev コントラクトにアドレスを登録し、登録済みアドレスの資産と関連ハッシュ値を管理します。
+ * 実装1 (フロントエンドでハッシュ計算) と 実装2 (コントラクト内でハッシュ計算) の両方の機能を含みます。
+ */
 contract AssetManager {
-    // アドレスのリストを保存する配列
+    // --- 状態変数 ---
     address[] private registeredAddresses;
+    mapping(address => bool) private isAddressRegistered;
+    mapping(address => uint256) public userAssets;
 
-    // イベント：アドレスが登録された際に発火
-    event AddressRegistered(address indexed addr);
+    // --- 実装1用: フロントエンドから渡されたハッシュ (bytes) を保存 ---
+    mapping(address => mapping(uint256 => bytes)) public assetStateToHashMap;
 
-    // registAddress関数：入力されたアドレスをリストに追加
+    // ★★★ 実装2用: コントラクト内で計算したハッシュ (bytes32) を保存 ★★★
+    mapping(address => mapping(uint256 => bytes32)) public assetStateToInternalHashMap;
+
+    // --- イベント ---
+    event AddressRegistered(address indexed user);
+    event AssetSet(address indexed user, uint256 amountAdded, uint256 newTotal);
+    event AssetWithHashSet( // 実装1用イベント
+    address indexed user, uint256 amountAdded, uint256 newTotalAsset, bytes hashValue);
+
+    // ★★★ 実装2用: 新しいイベント ★★★
+    event AssetWithInternalHashSet(
+        address indexed user, uint256 amountAdded, uint256 newTotalAsset, bytes32 calculatedHashValue
+    );
+
     function registAddress(address addr) public {
-        // 配列内にアドレスが存在するかチェック
-        for (uint i = 0; i < registeredAddresses.length; i++) {
-            if (registeredAddresses[i] == addr) {
-                revert("Address is already registered");
-            }
-        }
-        // アドレスを配列に追加
+        require(addr != address(0), "AssetManager: Cannot register the zero address");
+        require(!isAddressRegistered[addr], "AssetManager: Address is already registered");
         registeredAddresses.push(addr);
-
-        // イベントを発火
+        isAddressRegistered[addr] = true;
+        console.log("Address registered:", addr);
         emit AddressRegistered(addr);
     }
 
-    // getRegisteredAddresses関数：登録されたアドレスのリストを取得
+    function setAsset(uint256 _amount) public {
+        require(isAddressRegistered[msg.sender], "AssetManager: Caller is not a registered address");
+        require(_amount > 0, "AssetManager: Amount must be greater than zero");
+        uint256 currentAmount = userAssets[msg.sender];
+        uint256 newTotalAmount = currentAmount + _amount;
+        userAssets[msg.sender] = newTotalAmount;
+        console.log("--- Asset Set ---");
+        console.log("User:", msg.sender);
+        console.log("Amount Added:", _amount);
+        console.log("New Total:", newTotalAmount);
+        console.log("--- End Asset Set ---");
+        emit AssetSet(msg.sender, _amount, newTotalAmount);
+    }
+
+    function addAssetWithHash(uint256 _amount, bytes calldata _hashvalue) public {
+        // 実装1用
+        require(isAddressRegistered[msg.sender], "AssetManager: Caller is not a registered address");
+        require(_amount > 0, "AssetManager: Amount must be greater than zero");
+        require(_hashvalue.length > 0, "AssetManager: Hash value cannot be empty");
+        uint256 currentTotalAsset = userAssets[msg.sender];
+        uint256 newTotalAsset = currentTotalAsset + _amount;
+        userAssets[msg.sender] = newTotalAsset;
+        assetStateToHashMap[msg.sender][newTotalAsset] = _hashvalue;
+        console.log("--- Asset With Hash Set (Frontend Calc) ---");
+        console.log("User:", msg.sender);
+        console.log("Amount Added:", _amount);
+        console.log("New Total Asset:", newTotalAsset);
+        if (_hashvalue.length >= 32) {
+            console.log("Hash Value (first 32 bytes):");
+            console.logBytes32(bytes32(slice(_hashvalue, 0, 32)));
+        } else {
+            console.log("Hash Value (less than 32 bytes, full value):");
+            console.logBytes(_hashvalue);
+        }
+        console.log("--- End Asset With Hash Set (Frontend Calc) ---");
+        emit AssetWithHashSet(msg.sender, _amount, newTotalAsset, _hashvalue);
+    }
+
+    // ★★★ 実装2用: 新しい関数 ★★★
+    function addAssetAndCalculateHashInternal(uint256 _amount, bytes memory _fileData) public {
+        require(isAddressRegistered[msg.sender], "AssetManager: Caller is not a registered address");
+        require(_amount > 0, "AssetManager: Amount must be greater than zero");
+        require(_fileData.length > 0, "AssetManager: File data cannot be empty");
+
+        uint256 currentTotalAsset = userAssets[msg.sender];
+        uint256 newTotalAsset = currentTotalAsset + _amount;
+        userAssets[msg.sender] = newTotalAsset;
+
+        bytes32 calculatedHash = sha256(_fileData);
+        assetStateToInternalHashMap[msg.sender][newTotalAsset] = calculatedHash;
+
+        console.log("--- Asset With Internal Hash Set (Contract Calc) ---");
+        console.log("User:", msg.sender);
+        console.log("Amount Added:", _amount);
+        console.log("New Total Asset:", newTotalAsset);
+        console.logBytes32(calculatedHash);
+        console.log("--- End Asset With Internal Hash Set (Contract Calc) ---");
+        emit AssetWithInternalHashSet(msg.sender, _amount, newTotalAsset, calculatedHash);
+    }
+
     function getRegisteredAddresses() public view returns (address[] memory) {
         return registeredAddresses;
     }
 
-    // getAddressCount関数：登録されたアドレスの数を取得
-    function getAddressCount() public view returns (uint256) {
-        return registeredAddresses.length;
+    function isRegistered(address addr) public view returns (bool) {
+        return isAddressRegistered[addr];
     }
 
-    // アドレスごとの資産を管理するmapping
-    mapping(address => uint256) private assets;
-
-    // イベント：資産が登録または更新された際に発火
-    event AssetUpdated(address indexed addr, uint256 amount);
-
-    // addAsset関数：資産を登録または更新する
-    function addAsset(uint256 amount) public {
-        // 呼び出し元アドレスが登録されているか確認
-        bool isRegistered = false;
-        for (uint i = 0; i < registeredAddresses.length; i++) {
-            if (registeredAddresses[i] == msg.sender) {
-                isRegistered = true;
-                break;
-            }
-        }
-
-        if (!isRegistered) {
-            revert("Address is not registered");
-        }
-
-        // 資産を追加または更新
-        assets[msg.sender] += amount;
-
-        // イベントを発火
-        emit AssetUpdated(msg.sender, assets[msg.sender]);
+    function getAsset(address _user) public view returns (uint256) {
+        return userAssets[_user];
     }
 
-    // getAsset関数：指定されたアドレスの資産額を取得
-    function getAsset(address addr) public view returns (uint256) {
-        return assets[addr];
+    function getHashForAssetAmount(address _user, uint256 _totalAsset) public view returns (bytes memory) {
+        // 実装1用
+        require(isAddressRegistered[_user], "AssetManager: User is not registered");
+        return assetStateToHashMap[_user][_totalAsset];
     }
 
-    mapping(address => bytes[]) private documentHashes;
-
-    // addAsset関数：資産を登録または更新する
-    function addAssetWithHash(uint256 amount, bytes calldata hashvalue) public {
-        // 呼び出し元アドレスが登録されているか確認
-        bool isRegistered = false;
-        for (uint i = 0; i < registeredAddresses.length; i++) {
-            if (registeredAddresses[i] == msg.sender) {
-                isRegistered = true;
-                break;
-            }
-        }
-
-        if (!isRegistered) {
-            revert("Address is not registered");
-        }
-
-        // ハッシュが登録されているか確認
-        bool isHashRegistered = false;
-        for (uint i = 0; i < documentHashes[msg.sender].length; i++) {
-            for (uint j = 0; j < 32; j++) {
-                if (documentHashes[msg.sender][i][j] != hashvalue[j]) {
-                    break;
-                }
-                if (j == 31) {
-                    isHashRegistered = true;
-                }
-            }
-            if (isHashRegistered) {
-                break;
-            }
-        }
-        if (isHashRegistered) {
-            revert("Hash is already registered");
-        }
-
-        // 資産を追加または更新
-        assets[msg.sender] += amount;
-
-        // ハッシュを配列に追加
-        documentHashes[msg.sender].push(hashvalue);
-
-        // イベントを発火
-        emit AssetUpdated(msg.sender, assets[msg.sender]);
+    // ★★★ 実装2用: 新しいGetter関数 ★★★
+    function getInternalHashForAssetAmount(address _user, uint256 _totalAsset) public view returns (bytes32) {
+        require(isAddressRegistered[_user], "AssetManager: User is not registered");
+        return assetStateToInternalHashMap[_user][_totalAsset];
     }
 
-    function getHash(address addr) public view returns (bytes[] memory) {
-        return documentHashes[addr];
+    function slice(bytes memory b, uint256 start, uint256 length) internal pure returns (bytes memory) {
+        require(b.length >= start + length, "Slice: out of bounds");
+        bytes memory result = new bytes(length);
+        for (uint256 i = 0; i < length; i++) {
+            result[i] = b[start + i];
+        }
+        return result;
     }
 }

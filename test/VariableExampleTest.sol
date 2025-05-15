@@ -15,8 +15,8 @@ contract VariableExampleTest is Test {
 
     // 初期値の確認テスト
     function testInitialStoredNumber() public {
-        uint expected = 10;
-        uint actual = variableExample.getStoredNumber();
+        uint256 expected = 10;
+        uint256 actual = variableExample.getStoredNumber();
 
         if (actual != expected) {
             emit log("Error: Initial storedNumber is not 10");
@@ -28,11 +28,11 @@ contract VariableExampleTest is Test {
 
     // メンバ変数とローカル変数の違いを確認するテスト
     function testUpdateStoredNumber() public {
-        uint newNumber = 15;
+        uint256 newNumber = 15;
         variableExample.updateStoredNumber(newNumber);
 
-        uint expected = newNumber * 2; // ローカル変数 tempValue により、storedNumber は newNumber * 2 になる
-        uint actual = variableExample.getStoredNumber();
+        uint256 expected = newNumber * 2; // ローカル変数 tempValue により、storedNumber は newNumber * 2 になる
+        uint256 actual = variableExample.getStoredNumber();
 
         if (actual != expected) {
             emit log("Error: storedNumber was not updated correctly");

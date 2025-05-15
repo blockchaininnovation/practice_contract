@@ -14,29 +14,17 @@ contract LoopExampleTest is Test {
 
     // 1から10までの合計が正しく計算されているかを確認するテスト
     function testCalculateSum() public {
-        uint expectedSum = 55; // 1 + 2 + ... + 10 = 55
-        uint calculatedSum = loopExample.sum();
-        assertEq(
-            calculatedSum,
-            expectedSum,
-            "Error: The calculated sum should be 55."
-        );
-        emit log(
-            "testCalculateSum passed: The calculated sum is 55 as expected."
-        );
+        uint256 expectedSum = 55; // 1 + 2 + ... + 10 = 55
+        uint256 calculatedSum = loopExample.sum();
+        assertEq(calculatedSum, expectedSum, "Error: The calculated sum should be 55.");
+        emit log("testCalculateSum passed: The calculated sum is 55 as expected.");
     }
 
     // calculateSum関数単体のテスト
     function testCalculateSumFunction() public {
-        uint expectedSum = 55; // 1 + 2 + ... + 10 = 55
-        uint calculatedSum = loopExample.calculateSum();
-        assertEq(
-            calculatedSum,
-            expectedSum,
-            "Error: The calculateSum function should return 55."
-        );
-        emit log(
-            "testCalculateSumFunction passed: The calculateSum function returns 55 as expected."
-        );
+        uint256 expectedSum = 55; // 1 + 2 + ... + 10 = 55
+        uint256 calculatedSum = loopExample.calculateSum();
+        assertEq(calculatedSum, expectedSum, "Error: The calculateSum function should return 55.");
+        emit log("testCalculateSumFunction passed: The calculateSum function returns 55 as expected.");
     }
 }

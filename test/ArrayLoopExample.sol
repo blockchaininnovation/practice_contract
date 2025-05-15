@@ -22,35 +22,23 @@ contract ArrayLoopExampleTest is Test {
         arrayLoopExample.addNumber(5);
 
         // 合計を計算し、期待値と比較
-        uint expectedSum = 1 + 2 + 3 + 4 + 5; // 15
-        uint calculatedSum = arrayLoopExample.calculateSum();
-        assertEq(
-            calculatedSum,
-            expectedSum,
-            "Error: The calculated sum should be 15."
-        );
+        uint256 expectedSum = 1 + 2 + 3 + 4 + 5; // 15
+        uint256 calculatedSum = arrayLoopExample.calculateSum();
+        assertEq(calculatedSum, expectedSum, "Error: The calculated sum should be 15.");
 
         // 結果が正しい場合にログを出力
-        emit log(
-            "testCalculateSum passed: The calculated sum is 15 as expected."
-        );
+        emit log("testCalculateSum passed: The calculated sum is 15 as expected.");
     }
 
     // 空の配列の場合のテスト
     function testCalculateSumEmptyArray() public {
         // 合計を計算し、期待値と比較
-        uint expectedSum = 0;
-        uint calculatedSum = arrayLoopExample.calculateSum();
-        assertEq(
-            calculatedSum,
-            expectedSum,
-            "Error: The calculated sum should be 0 for an empty array."
-        );
+        uint256 expectedSum = 0;
+        uint256 calculatedSum = arrayLoopExample.calculateSum();
+        assertEq(calculatedSum, expectedSum, "Error: The calculated sum should be 0 for an empty array.");
 
         // 結果が正しい場合にログを出力
-        emit log(
-            "testCalculateSumEmptyArray passed: The calculated sum is 0 as expected for an empty array."
-        );
+        emit log("testCalculateSumEmptyArray passed: The calculated sum is 0 as expected for an empty array.");
     }
 
     // 大きな数値を含む配列の合計をテスト
@@ -61,17 +49,11 @@ contract ArrayLoopExampleTest is Test {
         arrayLoopExample.addNumber(300);
 
         // 合計を計算し、期待値と比較
-        uint expectedSum = 100 + 200 + 300; // 600
-        uint calculatedSum = arrayLoopExample.calculateSum();
-        assertEq(
-            calculatedSum,
-            expectedSum,
-            "Error: The calculated sum should be 600."
-        );
+        uint256 expectedSum = 100 + 200 + 300; // 600
+        uint256 calculatedSum = arrayLoopExample.calculateSum();
+        assertEq(calculatedSum, expectedSum, "Error: The calculated sum should be 600.");
 
         // 結果が正しい場合にログを出力
-        emit log(
-            "testCalculateSumWithLargeNumbers passed: The calculated sum is 600 as expected."
-        );
+        emit log("testCalculateSumWithLargeNumbers passed: The calculated sum is 600 as expected.");
     }
 }

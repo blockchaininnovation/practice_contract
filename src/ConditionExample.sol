@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 contract ConditionExample {
-    uint public value;
+    uint256 public value;
 
     // 値を設定する関数
-    function setValue(uint _value) public {
+    function setValue(uint256 _value) public {
         value = _value;
     }
 

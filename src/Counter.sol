@@ -15,5 +15,4 @@ contract Counter {
     function decrement() public {
         number--;
     }
-    
 }
